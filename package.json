@@ -1,0 +1,28 @@
+{
+  "name": "vp",
+  "version": "1.0.0",
+  "description": "Veebiprogrammeerimise express.js rakendus",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://tammmatTLU@github.com/tammmatTLU/vp.git"
+  },
+  "keywords": [
+    "Veebiprogrammeerimine",
+    "Node.js",
+    "Tallinna",
+    "Ülikool"
+  ],
+  "author": "Mattias Tamm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tammmatTLU/vp/issues"
+  },
+  "homepage": "https://github.com/tammmatTLU/vp#readme",
+  "dependencies": {
+    "express": "~4.16.1"
+  }
+}
