@@ -51,4 +51,4 @@ const partOfDayEt = function() {
     return dayPart;
 };
 //ekspordin kõik vajaliku
-module.exports = {dateFormatted: dateFormattedEt, dayOfWeek: dayOfWeekEt, timeFormatted: timeFormattedEt, partOfDay: partOfDayEt, monthNames: monthNamesEt, dayNames: dayNamesEt};
+module.exports = {dateFormattedEt: dateFormattedEt, dayOfWeekEt: dayOfWeekEt, timeFormattedEt: timeFormattedEt, partOfDayEt: partOfDayEt, monthNamesEt: monthNamesEt, dayNamesEt: dayNamesEt};
