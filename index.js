@@ -45,7 +45,7 @@ app.post("/regvisit", (req, res)=>{
             throw err;
         }
         else{
-            fs.appendFile("public/textfiles/visitlog.txt", req.body.firstNameInput + " " + req.body.lastNameInput + ";", (err)=>{
+            fs.appendFile("public/textfiles/visitlog.txt", req.body.firstNameInput + " " + req.body.lastNameInput + " | " + dateTime.dateFormattedEt() + " | " + dateTime.timeFormattedEt() + ";", (err)=>{
                 if(err){
                     throw err;
                 }
@@ -58,8 +58,23 @@ app.post("/regvisit", (req, res)=>{
     });
     //res.render("regvisit");
 });
+
+app.get("/guestlist", (req, res)=>{
+    //näitan lehel külastajate listi
+    let visitLog = [];
+    fs.readFile("public/textfiles/visitlog.txt", "utf8", (err, data)=>{
+        if(err){
+            res.render("justlist", {h2: "Registreeritud külastajad:", listData: []});
+        }
+        else{
+            visitLog = data.split(";");
+            res.render("justlist", {h2: "Registreeritud külastused:", listData: visitLog});
+        }
+    });
+});
+
 app.listen(5209);
 
 //KODUS:
-//1) Lisada logile aeg, millal keegi külastas.
-//2) Näidata lehel listi nimedest ja kellaaegadest.
+//1) Lisada logile aeg, millal keegi külastas. DONE
+//2) Näidata lehel listi nimedest ja kellaaegadest. DONE
