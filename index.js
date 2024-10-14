@@ -1,5 +1,5 @@
 const express = require("express");
-const dateTime = require("./dateTime");
+const dateTime = require("./my_modules/dateTime");
 const fs = require("fs")
 //et saada kõik päringust kätte
 const bodyparser = require("body-parser")
