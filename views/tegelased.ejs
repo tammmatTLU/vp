@@ -14,7 +14,7 @@
     <li><a href="/eestifilm">Eesti film</a></li>
   </ul>
   <hr>
-  <h2>Näitlejad</h2>
+  <h2><%= h2 %></h2>
   <ul>
     <% persons.forEach(function(item) { %>
       <li><%= item.first_name %> <%= item.last_name %>, sündinud: <%= item.birth_date %></li>

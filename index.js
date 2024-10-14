@@ -16,6 +16,8 @@ app.use(express.static("public"));
 //kasutame body-parserit päringute parsimiseks (kui ainult tekst, siis false, kui ka muud failitüübid, siis true)
 app.use(bodyparser.urlencoded({extended: false}));
 
+let notice = "";
+
 //loon andmebaasiühenduse
 const conn = mysql.createConnection({
     host: dbInfo.configData.host,
@@ -25,7 +27,7 @@ const conn = mysql.createConnection({
 });
 
 app.get("/", (req, res)=>{
-    res.render("index");
+    res.render("index", {notice: notice});
 });
 app.get("/timenow", (req, res)=>{
     const dateNow = dateTime.dateFormattedEt();
@@ -73,14 +75,15 @@ app.post("/regvisit", (req, res)=>{
 
 app.get("/guestlist", (req, res)=>{
     //näitan lehel külastajate listi
-    let visitLog = [];
+    let visitLogTxt = [];
     fs.readFile("public/textfiles/visitlog.txt", "utf8", (err, data)=>{
         if(err){
-            res.render("justlist", {h2: "Registreeritud külastajad:", listData: []});
+            res.render("justlist", {h2: "Registreeritud külastajad:", listData: [], notice: "Külastajate loetelu ei saa kuvada! "});
+            throw err;
         }
         else{
-            visitLog = data.split(";");
-            res.render("justlist", {h2: "Registreeritud külastused:", listData: visitLog});
+            visitLogTxt = data.split(";");
+            res.render("justlist", {h2: "Registreeritud külastused:", listData: visitLogTxt, notice: notice});
         }
     });
 });
@@ -89,18 +92,67 @@ app.get("/eestifilm", (req, res)=>{
     res.render("eestifilm");
 });
 
-app.get("/eestifilm/naitlejad", (req, res)=>{
+app.get("/eestifilm/tegelased", (req, res)=>{
     //loon andmebaasi päringu
     let sqlReq = "SELECT first_name, last_name, birth_date FROM person";
     conn.query(sqlReq, (err, sqlRes)=>{
         if(err) {
-            res.render("naitlejad", {persons: []})
+            res.render("tegelased", {persons: [], h2: "Tegelased:"});
         }
         else {
-            res.render("naitlejad", {persons: sqlRes})
+            res.render("tegelased", {persons: sqlRes, h2: "Tegelased:"});
         }
     });
-    //res.render("naitlejad");
+    //res.render("tegelased");
+});
+
+app.get("/eestifilm/lisa", (req, res)=>{
+    res.render("addperson");
+});
+
+app.get("/regvisitdb", (req, res)=>{
+    let firstName = "";
+    let lastName = "";
+    res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
+});
+
+app.post("/regvisitdb", (req, res)=>{
+    let firstName = "";
+    let lastName = "";
+    //kontrollin, et kõik vajalikud andmed oleksid olemas
+    if(!req.body.firstNameInput || !req.body.lastNameInput) {
+        notice = "Osa andmeid on puudu!";
+        firstName = req.body.firstNameInput;
+        lastName = req.body.lastNameInput;
+        res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
+    }
+    else {
+        let sqlReq = "INSERT INTO visitlog (first_name, last_name) VALUES (?,?)";
+        conn.query(sqlReq, [req.body.firstNameInput, req.body.lastNameInput], (err, sqlRes)=>{
+            if(err) {
+                notice = "Esines viga!";
+                res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
+                throw err;
+            }
+            else {
+                notice = "Külastus pandi kirja!";
+                //res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
+                res.render("index", {notice: notice});
+            }
+        });
+    }
+});
+
+app.get("/guestlistdb", (req, res)=>{
+    let sqlReq = "SELECT first_name, last_name, visit_date FROM visitlog";
+    conn.query(sqlReq, (err, sqlRes)=>{
+        if(err) {
+            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: []})
+        }
+        else {
+            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: sqlRes})
+        }
+    });
 });
 
 app.listen(5209);
