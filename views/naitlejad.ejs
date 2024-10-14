@@ -10,12 +10,15 @@
   <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
   <hr>
   <ul>
-    <li><a href="/timenow">Ajainfo</a></li>
-    <li><a href="/vanasonad">Vanasõnad</a></li>
-    <li><a href="/regvisit">Registreeri oma külastus (pane nimi kirja)</a></li>
-    <li><a href="/guestlist">Vaata lehe külastajaid</a></li>
+    <li><a href="/">Avalehele</a></li>
     <li><a href="/eestifilm">Eesti film</a></li>
   </ul>
   <hr>
+  <h2>Näitlejad</h2>
+  <ul>
+    <% persons.forEach(function(item) { %>
+      <li><%= item.first_name %> <%= item.last_name %>, sündinud: <%= item.birth_date %></li>
+    <% }); %>
+  </ul>
 </body>
 </html>

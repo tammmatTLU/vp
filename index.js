@@ -1,8 +1,12 @@
 const express = require("express");
 const dateTime = require("./my_modules/dateTime");
-const fs = require("fs")
+const fs = require("fs");
 //et saada kõik päringust kätte
-const bodyparser = require("body-parser")
+const bodyparser = require("body-parser");
+//andmebaasi andmed
+const dbInfo = require("../../vp2024config");
+//andmebaasiga suhtlemine
+const mysql = require("mysql2");
 
 const app = express();
 //määran view mootori (ejs)
@@ -11,6 +15,14 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 //kasutame body-parserit päringute parsimiseks (kui ainult tekst, siis false, kui ka muud failitüübid, siis true)
 app.use(bodyparser.urlencoded({extended: false}));
+
+//loon andmebaasiühenduse
+const conn = mysql.createConnection({
+    host: dbInfo.configData.host,
+    user: dbInfo.configData.user,
+    password: dbInfo.configData.passWord,
+    database: dbInfo.configData.dataBase
+});
 
 app.get("/", (req, res)=>{
     res.render("index");
@@ -35,7 +47,7 @@ app.get("/vanasonad", (req, res)=>{
 });
 
 app.get("/regvisit", (req, res)=>{
-    res.render("regvisit")
+    res.render("regvisit");
 });
 
 app.post("/regvisit", (req, res)=>{
@@ -71,6 +83,24 @@ app.get("/guestlist", (req, res)=>{
             res.render("justlist", {h2: "Registreeritud külastused:", listData: visitLog});
         }
     });
+});
+
+app.get("/eestifilm", (req, res)=>{
+    res.render("eestifilm");
+});
+
+app.get("/eestifilm/naitlejad", (req, res)=>{
+    //loon andmebaasi päringu
+    let sqlReq = "SELECT first_name, last_name, birth_date FROM person";
+    conn.query(sqlReq, (err, sqlRes)=>{
+        if(err) {
+            res.render("naitlejad", {persons: []})
+        }
+        else {
+            res.render("naitlejad", {persons: sqlRes})
+        }
+    });
+    //res.render("naitlejad");
 });
 
 app.listen(5209);
