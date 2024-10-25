@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Mattias Tamm</title>
+</head>
+<body>
+  <img src="/banner/vp_banner_2024.png" alt="veebiprogrammeerimise 2024. aasta kursuse bänner">
+  <h1>Mattias Tamm</h1>
+  <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
+  <hr>
+  <ul>
+    <li><a href="/">Avalehele</a></li>
+  </ul>
+  <hr>
+  <h2>Lisa filmitegelane</h2>
+  <form method="POST">
+    <label for="firstNameInput">Sisesta eesnimi: </label>
+    <input type="text" id="firstNameInput" name="firstNameInput" placeholder="Eesnimi ..." value="<%= firstName %>">
+    <br>
+    <label for="lastNameInput">Sisesta perekonnanimi: </label>
+    <input type="text" id="lastNameInput" name="lastNameInput" placeholder="Perekonnanimi ..." value="<%= lastName %>">
+    <br>
+    <label for="birthDateInput">Sisesta sünnikuupäev: </label>
+    <input type="date" for="birthDateInput" name="birthDateInput">
+    <br>
+    <input type="submit" id="personSubmit" name="personSubmit" value="Salvesta">
+  </form>
+  <h2>Lisa film</h2>
+  <form method="POST">
+    <label for="movieTitleInput">Sisesta filmi pealkiri: </label>
+    <input type="text" id="movieTitleInput" name="movieTitleInput" placeholder="Pealkiri ..." value="<%= movieTitle %>">
+    <br>
+    <label for="productionYearInput">Sisesta filmi tootmisaasta: </label>
+    <input type="number" id="productionYearInput" name="productionYearInput" min="1800" max="2025" size="4" placeholder="YYYY" value="<%= productionYear %>">
+    <br>
+    <label for="durationInput">Sisesta filmi kestus minutites: </label>
+    <input type="number" id="durationInput" name="durationInput" min="1" placeholder="(nt. 61, 87, 91, etc.)" value="<%= duration %>">
+    <br>
+    <label for="movieDescInput">Sisesta filmi kirjeldus: </label>
+    <textarea id="movieDescInput" name="movieDescInput" cols="50" rows="10" value="<%= movieDesc %>"></textarea>
+    <br>
+    <input type="submit" id="movieSubmit" name="movieSubmit" value="Salvesta">
+  </form>
+  <h2>Lisa amet</h2>
+  <form method="POST">
+    <label for="posNameInput">Sisesta ametinimetus: </label>
+    <input type="text" id="posNameInput" name="posNameInput" placeholder="Ametinimetus ..." value="<%= posName %>">
+    <br>
+    <label for="posDescInput">Sisesta ameti kirjeldus: </label>
+    <textarea id="posDescInput" name="posDescInput" cols="50" rows="10" value="<%= posDesc %>"></textarea>
+    <br>
+    <input type="submit" id="positionSubmit" name="positionSubmit" value="Salvesta">
+  </form>
+  <p><%= notice %></p>
+</body>
+</html>

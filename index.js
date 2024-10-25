@@ -26,15 +26,19 @@ const conn = mysql.createConnection({
     database: dbInfo.configData.dataBase
 });
 
+//Avaleht
 app.get("/", (req, res)=>{
     res.render("index", {notice: notice});
 });
+
+//Ajainfo
 app.get("/timenow", (req, res)=>{
     const dateNow = dateTime.dateFormattedEt();
     const timeNow = dateTime.timeFormattedEt();
     const dayOfWeekNow = dateTime.dayOfWeekEt();
     res.render("timenow", {nowWD: dayOfWeekNow, nowD: dateNow, nowT: timeNow});
 });
+//Vanasõnade list
 app.get("/vanasonad", (req, res)=>{
     let folkWisdom = [];
     fs.readFile("public/textfiles/vanasonad.txt", "utf8", (err, data)=>{
@@ -48,6 +52,7 @@ app.get("/vanasonad", (req, res)=>{
     });
 });
 
+//Külastuse registreerimine tekstifaili.
 app.get("/regvisit", (req, res)=>{
     res.render("regvisit");
 });
@@ -61,16 +66,17 @@ app.post("/regvisit", (req, res)=>{
         else{
             fs.appendFile("public/textfiles/visitlog.txt", req.body.firstNameInput + " " + req.body.lastNameInput + " | " + dateTime.dateFormattedEt() + " | " + dateTime.timeFormattedEt() + ";", (err)=>{
                 if(err){
+                    notice = "Külastust ei saanud registreerida!"
+                    res.render("index", {notice: notice});
                     throw err;
                 }
                 else{
-                    console.log("Faili kirjutati!")
-                    res.render("index")
+                    notice = "Külastus registreeriti!"
+                    res.render("index", {notice: notice});
                 }
             });
         }
     });
-    //res.render("regvisit");
 });
 
 app.get("/guestlist", (req, res)=>{
@@ -78,7 +84,8 @@ app.get("/guestlist", (req, res)=>{
     let visitLogTxt = [];
     fs.readFile("public/textfiles/visitlog.txt", "utf8", (err, data)=>{
         if(err){
-            res.render("justlist", {h2: "Registreeritud külastajad:", listData: [], notice: "Külastajate loetelu ei saa kuvada! "});
+            notice = "Külastajate loetelu ei saa kuvada!"
+            res.render("justlist", {h2: "Registreeritud külastajad:", listData: [], notice: notice});
             throw err;
         }
         else{
@@ -87,6 +94,8 @@ app.get("/guestlist", (req, res)=>{
         }
     });
 });
+
+//EESTIFILM
 
 app.get("/eestifilm", (req, res)=>{
     res.render("eestifilm");
@@ -103,13 +112,107 @@ app.get("/eestifilm/tegelased", (req, res)=>{
             res.render("tegelased", {persons: sqlRes, h2: "Tegelased:"});
         }
     });
-    //res.render("tegelased");
 });
-
+//Filmiandmete lisamine andmebaasi
 app.get("/eestifilm/lisa", (req, res)=>{
-    res.render("addperson");
+    let firstName = "";
+    let lastName = "";
+    let movieTitle = "";
+    let productionYear = "";
+    let duration = "";
+    let movieDesc = "";
+    let posName = "";
+    let posDesc = "";
+    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
 });
 
+app.post("/eestifilm/lisa", (req, res)=>{
+    let firstName = "";
+    let lastName = "";
+    let birthDate = "";
+    let movieTitle = "";
+    let productionYear = "";
+    let duration = "";
+    let movieDesc = "";
+    let posName = "";
+    let posDesc = "";
+    if(req.body.personSubmit){
+        if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.birthDateInput){
+            notice = "Osa andmeid on puudu!";
+            firstName = req.body.firstNameInput;
+            lastName = req.body.lastNameInput;
+            birthDate = req.body.birthDateInput;
+            res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+        }
+        else{
+            let sqlReq = "INSERT INTO person (first_name, last_name, birth_date) VALUES (?,?,?)";
+            conn.query(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.birthDateInput], (err, sqlRes)=>{
+                if(err) {
+                    notice = "Esines viga!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                    throw err;
+                }
+                else {
+                    notice = "Isik lisati andmebaasi!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                }
+            });
+        }
+    }
+    else if(req.body.movieSubmit){
+        if(!req.body.movieTitleInput || !req.body.productionYearInput || !req.body.durationInput || !req.body.movieDescInput){
+            notice = "Osa andmeid on puudu!";
+            movieTitle = req.body.movieTitleInput;
+            productionYear = req.body.productionYearInput;
+            duration = req.body.durationInput;
+            movieDesc = req.body.movieDescInput;
+            res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+        }
+        else{
+            let sqlReq = "INSERT INTO movie (title, production_year, duration, description) VALUES (?,?,?,?)";
+            conn.query(sqlReq, [req.body.movieTitleInput, req.body.productionYearInput, req.body.durationInput, req.body.movieDescInput], (err, sqlRes)=>{
+                if(err) {
+                    notice = "Esines viga!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                    throw err;
+                }
+                else {
+                    notice = "Film lisati andmebaasi!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                }
+            });
+        }
+    }
+    else if(req.body.positionSubmit){
+        if(!req.body.posNameInput || !req.body.posDescInput){
+            notice = "Osa andmeid on puudu!";
+            posName = req.body.posNameInput;
+            posDesc = req.body.posDescInput;
+            res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+        }
+        else{
+            let sqlReq = "INSERT INTO position (position_name, description) VALUES (?,?)";
+            conn.query(sqlReq, [req.body.posNameInput, req.body.posDescInput], (err, sqlRes)=>{
+                if(err) {
+                    notice = "Esines viga!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                    throw err;
+                }
+                else {
+                    notice = "Amet lisati andmebaasi!";
+                    res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+                }
+            });
+        }
+    }
+    else {
+        notice = "Esines viga!";
+        res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
+    }
+});
+
+//VISITLOG DATABASE
+//Külastuse reegistreerimine andmebaasi.
 app.get("/regvisitdb", (req, res)=>{
     let firstName = "";
     let lastName = "";
@@ -136,7 +239,6 @@ app.post("/regvisitdb", (req, res)=>{
             }
             else {
                 notice = "Külastus pandi kirja!";
-                //res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
                 res.render("index", {notice: notice});
             }
         });
@@ -155,8 +257,4 @@ app.get("/guestlistdb", (req, res)=>{
     });
 });
 
-app.listen(5209);
-
-//KODUS:
-//1) Lisada logile aeg, millal keegi külastas. DONE
-//2) Näidata lehel listi nimedest ja kellaaegadest. DONE
+app.listen(5249);
