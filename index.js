@@ -7,16 +7,22 @@ const bodyparser = require("body-parser");
 const dbInfo = require("../../vp2024config");
 //andmebaasiga suhtlemine
 const mysql = require("mysql2");
+//fotode üleslaadimiseks
+const multer = require("multer");
+//Pilditöötluseks
+const sharp = require("sharp");
 
 const app = express();
+
 //määran view mootori (ejs)
 app.set("view engine", "ejs");
 //määran jagatavate avalike failide kausta
 app.use(express.static("public"));
 //kasutame body-parserit päringute parsimiseks (kui ainult tekst, siis false, kui ka muud failitüübid, siis true)
-app.use(bodyparser.urlencoded({extended: false}));
+app.use(bodyparser.urlencoded({extended: true}));
+//seadistame fotode üleslaadimiseks vahevara (middleware), mis määrab kataloogi, kuhu laetakse
+const upload = multer({dest: "./public/gallery/orig"});
 
-let notice = "";
 
 //loon andmebaasiühenduse
 const conn = mysql.createConnection({
@@ -25,6 +31,8 @@ const conn = mysql.createConnection({
     password: dbInfo.configData.passWord,
     database: dbInfo.configData.dataBase
 });
+
+let notice = "";
 
 //Avaleht
 app.get("/", (req, res)=>{
@@ -191,7 +199,7 @@ app.post("/eestifilm/lisa", (req, res)=>{
             res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
         }
         else{
-            let sqlReq = "INSERT INTO position (position_name, description) VALUES (?,?)";
+            let sqlReq = "INSERT INTO if24_mattias_ta.position (position_name, description) VALUES (?,?)";
             conn.query(sqlReq, [req.body.posNameInput, req.body.posDescInput], (err, sqlRes)=>{
                 if(err) {
                     notice = "Esines viga!";
@@ -249,12 +257,53 @@ app.get("/guestlistdb", (req, res)=>{
     let sqlReq = "SELECT first_name, last_name, visit_date FROM visitlog";
     conn.query(sqlReq, (err, sqlRes)=>{
         if(err) {
-            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: []})
+            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: []});
         }
         else {
-            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: sqlRes})
+            res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: sqlRes});
         }
     });
 });
 
-app.listen(5249);
+//Galeriifotode üleslaadimine
+app.get("/photoupload", (req, res)=>{
+    res.render("photoupload");
+});
+
+app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
+    const fileName = "vp_" + Date.now() + ".jpg";
+    fs.rename(req.file.path, req.file.destination + "/" + fileName, (err)=>{
+        if(err) {
+            console.log("Faili nime muutmise viga: " + err);
+        }
+    });
+    sharp(req.file.destination + "/" + fileName).resize(800, 600).jpeg({quality: 90}).toFile("./public/gallery/normal/" + fileName);
+    sharp(req.file.destination + "/" + fileName).resize(100, 100).jpeg({quality: 90}).toFile("./public/gallery/thumb/" + fileName);
+    //salvestame info andmebaasi
+    let sqlReq = "INSERT INTO vp_photos (file_name, orig_name, alt_text, privacy, userid) VALUES (?,?,?,?,?)";
+    const userId = 1
+    conn.query(sqlReq, [fileName, req.file.originalname, req.body.altInput, req.body.privacyInput, userId], (err, sqlRes)=>{
+        if(err) {
+            throw err;
+        }
+        else {
+            console.log("Pilt laeti andmebaasi!");
+            res.render("photoupload");
+        }
+    });
+});
+
+app.get("/publicgallery", (req, res)=>{
+    let sqlReq = "SELECT file_name, alt_text FROM vp_photos WHERE privacy = ?";
+    const privacy = 3;
+    conn.query(sqlReq, [privacy], (err, sqlRes)=>{
+        if(err) {
+            res.render("gallery", {pictures: []});
+        }
+        else {
+            res.render("gallery", {pictures: sqlRes});
+        }
+    });
+});
+
+app.listen(5209);

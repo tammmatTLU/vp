@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Mattias Tamm</title>
+</head>
+<body>
+  <img src="/banner/vp_banner_2024.png" alt="veebiprogrammeerimise 2024. aasta kursuse bänner">
+  <h1>Mattias Tamm</h1>
+  <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
+  <hr>
+  <ul>
+    <li><a href="/">Avalehele</a></li>
+  </ul>
+  <hr>
+  <h2>Galeriifotod</h2>
+  <% pictures.forEach(function(item) { %>
+    <a href="/gallery/normal/<%= item.file_name %>" target="_blank"><img src="/gallery/thumb/<%= item.file_name %>" alt="<%= item.alt_text %>"></a>
+  <% }); %>
+</body>
+</html>
