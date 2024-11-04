@@ -9,6 +9,16 @@
   <h1>Mattias Tamm</h1>
   <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
   <hr>
+  <form method="POST">
+    <label for="emailInput">Kasutajatunnus</label>
+    <input type="email" id="emailInput" name="emailInput">
+    <br>
+    <label for="passwordInput">Salasõna: </label>
+    <input type="password" id="passwordInput" name="passwordInput">
+    <br>
+    <input type="submit" id="loginSubmit" name="loginSubmit" value="Logi sisse"><span><%= locals.notice %></span>
+  </form>
+  <hr>
   <ul>
     <li><a href="/timenow">Ajainfo</a></li>
     <li><a href="/vanasonad">Vanasõnad</a></li>
@@ -16,12 +26,10 @@
     <li><a href="/regvisitdb">Registreeri oma külastus (pane nimi andmebaasi kirja)</a></li>
     <li><a href="/guestlist">Vaata lehe külastajaid (tekstifailist)</a></li>
     <li><a href="/guestlistdb">Vaata lehe külastajaid (andmebaasist)</a></li>
-    <li><a href="/eestifilm">Eesti film</a></li>
-    <li><a href="/photoupload">Galeriifotode üleslaadimine</a></li>
-    <li><a href="/publicgallery">Avalikud galeriifotod</a></li>
+    <li><a href="/signup">Registreeri kasutajakonto</a></li>
   </ul>
   <hr>
-  <p><%= notice %></p>
+  <p><%= locals.notice || "" %></p>
 
 </body>
 </html>

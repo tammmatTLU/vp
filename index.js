@@ -11,6 +11,10 @@ const mysql = require("mysql2");
 const multer = require("multer");
 //Pilditöötluseks
 const sharp = require("sharp");
+//Paroolide krüpteerimiseks
+const bcrypt = require("bcrypt")
+//sessioonihaldur
+const session = require("express-session")
 
 const app = express();
 
@@ -22,7 +26,9 @@ app.use(express.static("public"));
 app.use(bodyparser.urlencoded({extended: true}));
 //seadistame fotode üleslaadimiseks vahevara (middleware), mis määrab kataloogi, kuhu laetakse
 const upload = multer({dest: "./public/gallery/orig"});
-
+//sessioonihaldur
+app.use(session({secret:"Salavõti", saveUninitialized: true, resave: true}))
+let mySession;
 
 //loon andmebaasiühenduse
 const conn = mysql.createConnection({
@@ -37,6 +43,122 @@ let notice = "";
 //Avaleht
 app.get("/", (req, res)=>{
     res.render("index", {notice: notice});
+});
+
+//Sisse logimine
+app.post("/", (req, res)=>{
+    if(!req.body.emailInput || !req.body.passwordInput){
+        console.log("Andmed pole täielikud")
+        notice = "Andmed pole täielikud!"
+        res.render("index", {notice: notice});
+    }
+    else{
+        let sqlReq = "SELECT id, password FROM vp_users WHERE email = ?";
+        conn.execute(sqlReq, [req.body.emailInput], (err,result)=>{
+            if(err){
+                console.log("Ei saanud parooli kätte");
+                console.log(err);
+                notice = "Katki";
+                res.render("index", {notice: notice});
+            }
+            else{
+                if(result[0] != null){
+                    //kontrollime räsi vastavust sisestatud paroolile.
+                    bcrypt.compare(req.body.passwordInput, result[0].password, (err,compareResult)=>{
+                        if(err){
+                            console.log("Parool ja räsi ei ühti");
+                            console.log(err);
+                            notice = "Katki";
+                            res.render("index", {notice: notice});
+                        }
+                        else{
+                            //Kui võrdlustulemus on positiivne
+                            if(compareResult){
+                                console.log("Töötab.");
+                                //võtame sessiooni kasutusele.
+                                mySession = req.session;
+                                mySession.userId = result[0].id;
+                                res.redirect("/home");
+                            }
+                            else{
+                                console.log("")
+                                notice = "Kasutajatunnus ja/või parool oli vigane!";
+                                res.render("index", {notice:notice});
+                            }
+                        }
+                    });
+                }
+                else{
+                    console.log("kasutajat pole")
+                    notice = "Kasutajatunnus või parool oli vigane!";
+                    res.render("index", {notice:notice})
+                }
+            }
+        });
+    }
+});
+
+app.get("/home", checkLogin,(req, res)=>{
+    console.log(mySession.userId);
+    res.render("home");
+});
+
+app.get("/logout", (req, res)=>{
+    req.session.destroy();
+    mySession = 0;
+    res.redirect("/");
+})
+
+//Kasutajakonto loomine
+app.get("/signup", (req, res)=>{
+    res.render("signup");
+});
+
+app.post("/signup", (req, res)=>{
+    if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.genderInput || !req.body.birthDateInput || !req.body.emailInput || !req.body.passwordInput || !req.body.confirmPasswordInput){
+        console.log("Andmeid puudu");
+        notice = "Andmeid on puudu.";
+        res.render("signup", {notice:notice});
+    }
+    else if(req.body.passwordInput < 8 || req.body.passwordInput !== req.body.confirmPasswordInput){
+        console.log("Paroolid ei klapi.");
+        notice = "Paroolid ei klapi.";
+        res.render("signup", {notice:notice});
+    }
+    else{
+        notice = "Töötas.";
+        bcrypt.genSalt(10, (err, salt)=>{
+            if(err){
+                console.log("Soola error");
+                notice = "Tehniline viga, kasutajat ei loodud!";
+                res.render("signup", {notice:notice});
+            }
+            else{
+                bcrypt.hash(req.body.passwordInput, salt, (err, pwdHash)=>{
+                    if(err){
+                        console.log("Räsi error");
+                        notice = "Tehniline viga, kasutajat ei loodud!";
+                        res.render("signup", {notice:notice});
+                    }
+                    else{
+                        let sqlReq = "INSERT INTO vp_users (first_name, last_name, gender, birth_date, email, password) VALUES (?,?,?,?,?,?)";
+                        conn.execute(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.genderInput, req.body.birthDateInput, req.body.emailInput, pwdHash], (err,sqlRes)=>{
+                            if(err){
+                                console.log("Andmebaasi kirjutamise viga");
+                                notice = "Tehniline viga, kasutajat ei loodud!";
+                                res.render("signup", {notice:notice});
+                            }
+                            else{
+                                console.log("Kasutaja loodi nimega " + req.body.emailInput);
+                                notice = "Kasutaja "+ req.body.emailInput +" loodi!";
+                                res.render("index", {notice:notice});
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
 });
 
 //Ajainfo
@@ -113,10 +235,10 @@ app.get("/eestifilm/tegelased", (req, res)=>{
     //loon andmebaasi päringu
     let sqlReq = "SELECT first_name, last_name, birth_date FROM person";
     conn.query(sqlReq, (err, sqlRes)=>{
-        if(err) {
+        if(err){
             res.render("tegelased", {persons: [], h2: "Tegelased:"});
         }
-        else {
+        else{
             res.render("tegelased", {persons: sqlRes, h2: "Tegelased:"});
         }
     });
@@ -155,12 +277,12 @@ app.post("/eestifilm/lisa", (req, res)=>{
         else{
             let sqlReq = "INSERT INTO person (first_name, last_name, birth_date) VALUES (?,?,?)";
             conn.query(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.birthDateInput], (err, sqlRes)=>{
-                if(err) {
+                if(err){
                     notice = "Esines viga!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                     throw err;
                 }
-                else {
+                else{
                     notice = "Isik lisati andmebaasi!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                 }
@@ -179,12 +301,12 @@ app.post("/eestifilm/lisa", (req, res)=>{
         else{
             let sqlReq = "INSERT INTO movie (title, production_year, duration, description) VALUES (?,?,?,?)";
             conn.query(sqlReq, [req.body.movieTitleInput, req.body.productionYearInput, req.body.durationInput, req.body.movieDescInput], (err, sqlRes)=>{
-                if(err) {
+                if(err){
                     notice = "Esines viga!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                     throw err;
                 }
-                else {
+                else{
                     notice = "Film lisati andmebaasi!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                 }
@@ -201,19 +323,19 @@ app.post("/eestifilm/lisa", (req, res)=>{
         else{
             let sqlReq = "INSERT INTO if24_mattias_ta.position (position_name, description) VALUES (?,?)";
             conn.query(sqlReq, [req.body.posNameInput, req.body.posDescInput], (err, sqlRes)=>{
-                if(err) {
+                if(err){
                     notice = "Esines viga!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                     throw err;
                 }
-                else {
+                else{
                     notice = "Amet lisati andmebaasi!";
                     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
                 }
             });
         }
     }
-    else {
+    else{
         notice = "Esines viga!";
         res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
     }
@@ -231,21 +353,21 @@ app.post("/regvisitdb", (req, res)=>{
     let firstName = "";
     let lastName = "";
     //kontrollin, et kõik vajalikud andmed oleksid olemas
-    if(!req.body.firstNameInput || !req.body.lastNameInput) {
+    if(!req.body.firstNameInput || !req.body.lastNameInput){
         notice = "Osa andmeid on puudu!";
         firstName = req.body.firstNameInput;
         lastName = req.body.lastNameInput;
         res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
     }
-    else {
+    else{
         let sqlReq = "INSERT INTO visitlog (first_name, last_name) VALUES (?,?)";
         conn.query(sqlReq, [req.body.firstNameInput, req.body.lastNameInput], (err, sqlRes)=>{
-            if(err) {
+            if(err){
                 notice = "Esines viga!";
                 res.render("regvisitdb", {notice: notice, firstName: firstName, lastName: lastName});
                 throw err;
             }
-            else {
+            else{
                 notice = "Külastus pandi kirja!";
                 res.render("index", {notice: notice});
             }
@@ -256,10 +378,10 @@ app.post("/regvisitdb", (req, res)=>{
 app.get("/guestlistdb", (req, res)=>{
     let sqlReq = "SELECT first_name, last_name, visit_date FROM visitlog";
     conn.query(sqlReq, (err, sqlRes)=>{
-        if(err) {
+        if(err){
             res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: []});
         }
-        else {
+        else{
             res.render("justlistdb", {h2: "Registreeritud külastajad:", visits: sqlRes});
         }
     });
@@ -273,7 +395,7 @@ app.get("/photoupload", (req, res)=>{
 app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
     const fileName = "vp_" + Date.now() + ".jpg";
     fs.rename(req.file.path, req.file.destination + "/" + fileName, (err)=>{
-        if(err) {
+        if(err){
             console.log("Faili nime muutmise viga: " + err);
         }
     });
@@ -281,29 +403,45 @@ app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
     sharp(req.file.destination + "/" + fileName).resize(100, 100).jpeg({quality: 90}).toFile("./public/gallery/thumb/" + fileName);
     //salvestame info andmebaasi
     let sqlReq = "INSERT INTO vp_photos (file_name, orig_name, alt_text, privacy, userid) VALUES (?,?,?,?,?)";
-    const userId = 1
-    conn.query(sqlReq, [fileName, req.file.originalname, req.body.altInput, req.body.privacyInput, userId], (err, sqlRes)=>{
-        if(err) {
+    //const userId = 1
+    conn.query(sqlReq, [fileName, req.file.originalname, req.body.altInput, req.body.privacyInput, mySession.userId], (err, sqlRes)=>{
+        if(err){
             throw err;
         }
-        else {
+        else{
             console.log("Pilt laeti andmebaasi!");
             res.render("photoupload");
         }
     });
 });
 
-app.get("/publicgallery", (req, res)=>{
+app.get("/gallery", (req, res)=>{
     let sqlReq = "SELECT file_name, alt_text FROM vp_photos WHERE privacy = ?";
     const privacy = 3;
     conn.query(sqlReq, [privacy], (err, sqlRes)=>{
-        if(err) {
+        if(err){
             res.render("gallery", {pictures: []});
         }
-        else {
+        else{
             res.render("gallery", {pictures: sqlRes});
         }
     });
 });
+
+function checkLogin(req,res,next){
+    if(mySession != null){
+        if(mySession.userId){
+            console.log("Login ok!");
+            next();
+        }
+        else{
+            console.log("Login not detected!");
+            res.redirect("/");
+        }
+    }
+    else{
+        res.redirect("/");
+    }
+}
 
 app.listen(5209);

@@ -9,13 +9,15 @@
   <h1>Mattias Tamm</h1>
   <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
   <hr>
+  <h2>Vinge veeb</h2>
   <ul>
-    <li><a href="/home">Avalehele</a></li>
+    <li><a href="/logout">Logi välja</a></li>
+    <li><a href="/eestifilm">Eesti film</a></li>
+    <li><a href="/photoupload">Galeriifotode üleslaadimine</a></li>
+    <li><a href="/gallery">Avalikud galeriifotod</a></li>
   </ul>
   <hr>
-  <h2>Galeriifotod</h2>
-  <% pictures.forEach(function(item) { %>
-    <a href="/gallery/normal/<%= item.file_name %>" target="_blank"><img src="/gallery/thumb/<%= item.file_name %>" alt="<%= item.alt_text %>"></a>
-  <% }); %>
+  <p><%= locals.notice || "" %></p>
+
 </body>
 </html>
