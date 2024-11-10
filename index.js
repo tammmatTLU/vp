@@ -111,55 +111,80 @@ app.get("/logout", (req, res)=>{
 
 //Kasutajakonto loomine
 app.get("/signup", (req, res)=>{
-    res.render("signup");
+    firstName = ""
+    lastName = ""
+    gender = 0
+    birthDate = ""
+    email = ""
+    res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
 });
 
 app.post("/signup", (req, res)=>{
-    if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.genderInput || !req.body.birthDateInput || !req.body.emailInput || !req.body.passwordInput || !req.body.confirmPasswordInput){
-        console.log("Andmeid puudu");
-        notice = "Andmeid on puudu.";
-        res.render("signup", {notice:notice});
-    }
-    else if(req.body.passwordInput < 8 || req.body.passwordInput !== req.body.confirmPasswordInput){
-        console.log("Paroolid ei klapi.");
-        notice = "Paroolid ei klapi.";
-        res.render("signup", {notice:notice});
-    }
-    else{
-        notice = "Töötas.";
-        bcrypt.genSalt(10, (err, salt)=>{
-            if(err){
-                console.log("Soola error");
-                notice = "Tehniline viga, kasutajat ei loodud!";
-                res.render("signup", {notice:notice});
+    let firstName = req.body.firstNameInput
+    let lastName = req.body.lastNameInput
+    let gender = req.body.genderInput
+    let birthDate = req.body.birthDateInput
+    let email = req.body.emailInput
+    let emailReq = "SELECT id FROM vp_users WHERE email = ?"
+    conn.execute(emailReq, [req.body.emailInput], (err, emailRes)=>{
+        if(err){
+            notice = "Tehniline viga 1.";
+            console.log(err);
+            res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
+        }
+        else{
+            if(emailRes[0] != null){
+                notice = "Emaili aadress on juba registreeritud!";
+                res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
+            }
+            else if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.genderInput || !req.body.birthDateInput || !req.body.emailInput || !req.body.passwordInput || !req.body.confirmPasswordInput){
+                console.log("Andmeid puudu");
+                notice = "Andmeid on puudu.";
+                res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
+            }
+            else if(req.body.passwordInput < 8 || req.body.passwordInput !== req.body.confirmPasswordInput){
+                console.log("Paroolid ei klapi.");
+                notice = "Paroolid ei klapi.";
+                res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
             }
             else{
-                bcrypt.hash(req.body.passwordInput, salt, (err, pwdHash)=>{
+                notice = "Töötas.";
+                bcrypt.genSalt(10, (err, salt)=>{
                     if(err){
-                        console.log("Räsi error");
+                        console.log("Soola error");
                         notice = "Tehniline viga, kasutajat ei loodud!";
-                        res.render("signup", {notice:notice});
+                        res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
                     }
                     else{
-                        let sqlReq = "INSERT INTO vp_users (first_name, last_name, gender, birth_date, email, password) VALUES (?,?,?,?,?,?)";
-                        conn.execute(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.genderInput, req.body.birthDateInput, req.body.emailInput, pwdHash], (err,sqlRes)=>{
+                        bcrypt.hash(req.body.passwordInput, salt, (err, pwdHash)=>{
                             if(err){
-                                console.log("Andmebaasi kirjutamise viga");
+                                console.log("Räsi error");
                                 notice = "Tehniline viga, kasutajat ei loodud!";
-                                res.render("signup", {notice:notice});
+                                res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
                             }
                             else{
-                                console.log("Kasutaja loodi nimega " + req.body.emailInput);
-                                notice = "Kasutaja "+ req.body.emailInput +" loodi!";
-                                res.render("index", {notice:notice});
+                                let sqlReq = "INSERT INTO vp_users (first_name, last_name, gender, birth_date, email, password) VALUES (?,?,?,?,?,?)";
+                                conn.execute(sqlReq, [req.body.firstNameInput, req.body.lastNameInput, req.body.genderInput, req.body.birthDateInput, req.body.emailInput, pwdHash], (err,sqlRes)=>{
+                                    if(err){
+                                        console.log("Andmebaasi kirjutamise viga");
+                                        notice = "Tehniline viga, kasutajat ei loodud!";
+                                        res.render("signup", {notice:notice, firstName:firstName, lastName:lastName, gender:gender, birthDate:birthDate, email:email});
+                                    }
+                                    else{
+                                        console.log("Kasutaja loodi nimega " + req.body.emailInput);
+                                        notice = "Kasutaja "+ req.body.emailInput +" loodi!";
+                                        res.render("index", {notice:notice});
+                                    }
+                                });
                             }
                         });
                     }
                 });
             }
-        });
-    }
+        }
+    });
 });
+    
 
 //Ajainfo
 app.get("/timenow", (req, res)=>{

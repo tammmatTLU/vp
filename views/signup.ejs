@@ -14,22 +14,37 @@
   <hr>
   <form method="POST">
     <label for="firstNameInput">Sisesta eesnimi: </label>
-    <input type="text" id="firstNameInput" name="firstNameInput" placeholder="Eesnimi ...">
+    <input type="text" id="firstNameInput" name="firstNameInput" placeholder="Eesnimi ..." value="<%= firstName %>">
     <br>
     <label for="lastNameInput">Sisesta perekonnanimi: </label>
-    <input type="text" id="lastNameInput" name="lastNameInput" placeholder="Perekonnanimi ...">
+    <input type="text" id="lastNameInput" name="lastNameInput" placeholder="Perekonnanimi ..." value="<%= lastName %>">
     <br>
     <label for="birthDateInput">Sisesta sünnikuupäev: </label>
-    <input type="date" for="birthDateInput" name="birthDateInput">
+    <input type="date" for="birthDateInput" name="birthDateInput" value="<%= birthDate %>">
     <br>
-    <label for="genderInput1">Mees </label>
-    <input type="radio" id="genderInput1" name="genderInput" value="1" checked>
-    <br>
-    <label for="genderInput2">Naine </label>
-    <input type="radio" id="genderInput2" name="genderInput" value="2">
+    <% if(gender == 1){ %>
+      <label for="genderInput1">Mees </label>
+      <input type="radio" id="genderInput1" name="genderInput" value="1" checked>
+      <br>
+      <label for="genderInput2">Naine </label>
+      <input type="radio" id="genderInput2" name="genderInput" value="2">
+      <br>
+    <% } else if(gender == 2){ %>
+      <label for="genderInput1">Mees </label>
+      <input type="radio" id="genderInput1" name="genderInput" value="1">
+      <br>
+      <label for="genderInput2">Naine </label>
+      <input type="radio" id="genderInput2" name="genderInput" value="2" checked>
+    <% } else{ %>
+      <label for="genderInput1">Mees </label>
+      <input type="radio" id="genderInput1" name="genderInput" value="1">
+      <br>
+      <label for="genderInput2">Naine </label>
+      <input type="radio" id="genderInput2" name="genderInput" value="2">
+    <% } %>
     <br>
     <label for="emailInput">E-mail (kasutajatunnuseks)</label>
-    <input type="email" id="emailInput" name="emailInput" placeholder="Sinu email ...">
+    <input type="email" id="emailInput" name="emailInput" placeholder="Sinu email ..." value="<%= email %>">
     <br>
     <label for="passwordInput">Salasõna: </label>
     <input type="password" id="passwordInput" name="passwordInput" placeholder="(min. 8 märki)">
