@@ -12,9 +12,11 @@ const multer = require("multer");
 //Pilditöötluseks
 const sharp = require("sharp");
 //Paroolide krüpteerimiseks
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
 //sessioonihaldur
-const session = require("express-session")
+const session = require("express-session");
+//asünkroonsuse võimaldaja
+const asyn = require("async");
 
 const app = express();
 
@@ -258,16 +260,31 @@ app.get("/eestifilm", (req, res)=>{
 
 app.get("/eestifilm/tegelased", (req, res)=>{
     //loon andmebaasi päringu
-    let sqlReq = "SELECT first_name, last_name, birth_date FROM person";
+    let sqlReq = "SELECT id, first_name, last_name, birth_date FROM person";
     conn.query(sqlReq, (err, sqlRes)=>{
         if(err){
-            res.render("tegelased", {persons: [], h2: "Tegelased:"});
+            res.render("tegelased", {persons: []});
         }
         else{
-            res.render("tegelased", {persons: sqlRes, h2: "Tegelased:"});
+            res.render("tegelased", {persons: sqlRes});
         }
     });
 });
+
+app.get("/eestifilm/personrelations/:id", (req, res)=>{
+    console.log(req.params.id);
+    let sqlReq = "SELECT movie.title, movie.production_year, position.position_name FROM movie JOIN person_in_movie ON person_in_movie.movie_id = movie.id JOIN if24_mattias_ta.position ON person_in_movie.position_id = position.id JOIN person ON person.id = person_in_movie.person_id WHERE person.id = ?"
+    conn.execute(sqlReq, [req.params.id], (err, sqlRes)=>{
+        if(err){
+            throw err;
+        }
+        else{
+            console.log(sqlRes);
+            res.render("personrelations", {relationList: sqlRes});
+        }
+    });
+});
+
 //Filmiandmete lisamine andmebaasi
 app.get("/eestifilm/lisa", (req, res)=>{
     let firstName = "";
@@ -278,6 +295,7 @@ app.get("/eestifilm/lisa", (req, res)=>{
     let movieDesc = "";
     let posName = "";
     let posDesc = "";
+    notice = "";
     res.render("addData", {notice: notice, firstName: firstName, lastName: lastName, movieTitle: movieTitle, productionYear: productionYear, duration: duration, movieDesc: movieDesc, posName: posName, posDesc: posDesc});
 });
 
@@ -366,6 +384,54 @@ app.post("/eestifilm/lisa", (req, res)=>{
     }
 });
 
+//filmiseose lisamine
+app.get("/eestifilm/lisaseos", (req, res)=>{
+    //kasutades async moodulit, panen mitu andmebaasi päringut samaaegselt toimima.
+    //loon SQL päringute loendi
+    const myQueries = [
+        function(callback){
+            conn.execute("SELECT id, first_name, last_name, birth_date FROM person", (err, result)=>{
+                if(err) {
+                    return callback(err);
+                }
+                else {
+                    return callback(null, result);
+                }
+            });
+        },
+        function(callback){
+            conn.execute("SELECT id, title, production_year FROM movie", (err, result)=>{
+                if(err) {
+                    return callback(err);
+                }
+                else {
+                    return callback(null, result);
+                }
+            });
+        },
+        function(callback){
+            conn.execute("SELECT id, position_name FROM if24_mattias_ta.position", (err, result)=>{
+                if(err) {
+                    return callback(err);
+                }
+                else {
+                    return callback(null, result);
+                }
+            });
+        }
+    ];
+    //paneme need tegevused paralleelselt tööle. tulemuse saab siis kui kõik tehtud. tulemuseks üks koondlist.
+    asyn.parallel(myQueries, (err, results)=>{
+        if(err){
+            throw err;
+        }
+        else{
+            console.log(results);
+            res.render("addrelations", {personList: results[0], movieList: results[1], positionList: results[2]})
+        }
+    });
+});
+
 //VISITLOG DATABASE
 //Külastuse reegistreerimine andmebaasi.
 app.get("/regvisitdb", (req, res)=>{
@@ -441,14 +507,18 @@ app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
 });
 
 app.get("/gallery", (req, res)=>{
-    let sqlReq = "SELECT file_name, alt_text FROM vp_photos WHERE privacy = ?";
+    let sqlReq = "SELECT id, file_name, alt_text FROM vp_photos WHERE privacy = ? AND deleted IS NULL";
     const privacy = 3;
-    conn.query(sqlReq, [privacy], (err, sqlRes)=>{
+    let photoList = [];
+    conn.execute(sqlReq, [privacy], (err, sqlRes)=>{
         if(err){
             res.render("gallery", {pictures: []});
         }
         else{
-            res.render("gallery", {pictures: sqlRes});
+            for(let i = 0; i < sqlRes.length; i ++){
+                photoList.push({id: sqlRes[i].id, fileName: sqlRes[i].file_name, href: "/gallery/thumb/", alt: sqlRes[i].alt_text})
+            }
+            res.render("gallery", {pictures: photoList});
         }
     });
 });

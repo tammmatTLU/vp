@@ -9,13 +9,16 @@
   <h1>Mattias Tamm</h1>
   <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
   <hr>
-  <h2>Eesti film</h2>
   <ul>
     <li><a href="/home">Avalehele</a></li>
-    <li><a href="/eestifilm/tegelased">Eesti filmitegelased</a></li>
-    <li><a href="/eestifilm/lisa">Lisa andmeid</a></li>
-    <li><a href="/eestifilm/lisaseos">Lisa seosed</a></li>
+    <li><a href="/eestifilm">Eesti film</a></li>
   </ul>
   <hr>
+  <h2>Ühe tegelase filmid</h2>
+  <ul>
+    <% relationList.forEach(function(relation) { %>
+      <li>Film: <%= relation.title %> Tootmisaasta:<%= relation.production_year %> Amet:<%= relation.position_name %></li>
+    <% }); %>
+  </ul>
 </body>
 </html>

@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title>Mattias Tamm</title>
+  <link rel="stylesheet" href="/style/gallery.css">
+  <link rel="stylesheet" href="/style/modal.css">
+  <scrpit src="/script/gallery.js" defer></scrpit>
 </head>
 <body>
   <img src="/banner/vp_banner_2024.png" alt="veebiprogrammeerimise 2024. aasta kursuse bänner">
@@ -13,9 +16,20 @@
     <li><a href="/home">Avalehele</a></li>
   </ul>
   <hr>
+  <dialog id="modal" class="modalarea">
+    <span id="modalClose" class="modalclose">&times;</span>
+    <div class="modalhorizontal">
+      <div class="modalvertical">
+        <p id="modalCaption"></p>
+        <img id="modalImage" src="/pics/empty.png" alt="galeriipilt">
+      </div>
+    </div>
+  </dialog>
   <h2>Galeriifotod</h2>
-  <% pictures.forEach(function(item) { %>
-    <a href="/gallery/normal/<%= item.file_name %>" target="_blank"><img src="/gallery/thumb/<%= item.file_name %>" alt="<%= item.alt_text %>"></a>
-  <% }); %>
+  <div class="gallery">
+    <% pictures.forEach(function(image){ %>
+      <img src="<%= image.href %><%= image.fileName %>" alt="<%= image.alt %>" data-filename="<%= image.fileName %>" data-id="<%= image.id %>" class="thumbs">
+    <% }); %>
+  </div>
 </body>
 </html>
