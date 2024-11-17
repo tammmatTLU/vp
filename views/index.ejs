@@ -3,12 +3,25 @@
 <head>
   <meta charset="utf-8">
   <title>Mattias Tamm</title>
+  <link rel="stylesheet" href="/style/gallery.css">
+  <link rel="stylesheet" href="/style/modal.css">
+  <script src="/script/gallery.js" defer></script>
 </head>
 <body>
   <img src="/banner/vp_banner_2024.png" alt="veebiprogrammeerimise 2024. aasta kursuse bänner">
   <h1>Mattias Tamm</h1>
   <p>See leht on loodud õppetöö raames <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a>, Digitehnoloogiate instituudis ja ei sisalda tõsiselt võetavat materjali.</p>
   <hr>
+  <dialog id="modal" class="modalarea">
+    <span id="modalClose" class="modalclose">&times;</span>
+    <div class="modalhorizontal">
+      <div class="modavertical">
+        <p id="modalCaption"></p>
+        <img id="modalImage" src="/pics/empty.png" alt="galeriipilt">
+      </div>
+    </div>
+  </dialog>
+  <p>Logi sisse</p>
   <form method="POST">
     <label for="emailInput">Kasutajatunnus</label>
     <input type="email" id="emailInput" name="emailInput">
@@ -29,6 +42,10 @@
     <li><a href="/signup">Registreeri kasutajakonto</a></li>
   </ul>
   <hr>
+  <h2>Uusim avalik foto</h2>
+  <div class="gallery">
+  <img src="<%= href %><%= filename %>" alt="<%= alt %>" data-filename="<%= filename %>" data-id="<%= id %>" class="thumbs">
+  </div>
   <p><%= locals.notice || "" %></p>
 
 </body>
