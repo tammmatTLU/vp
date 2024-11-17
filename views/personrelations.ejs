@@ -17,7 +17,18 @@
   <h2>Ühe tegelase filmid</h2>
   <ul>
     <% relationList.forEach(function(relation) { %>
-      <li>Film: <%= relation.title %> Tootmisaasta:<%= relation.production_year %> Amet:<%= relation.position_name %></li>
+      <li>
+        Film: <%= relation.title %> 
+        <br>
+        Tootmisaasta: <%= relation.production_year %> 
+        <br>
+        Amet: <%= relation.position_name %>
+        <br>
+        <% if(relation.role != null) { %>
+          Roll: <%= relation.role %>
+        <% } %>
+        <p></p>
+      </li>
     <% }); %>
   </ul>
 </body>

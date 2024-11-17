@@ -273,7 +273,7 @@ app.get("/eestifilm/tegelased", (req, res)=>{
 
 app.get("/eestifilm/personrelations/:id", (req, res)=>{
     console.log(req.params.id);
-    let sqlReq = "SELECT movie.title, movie.production_year, position.position_name FROM movie JOIN person_in_movie ON person_in_movie.movie_id = movie.id JOIN if24_mattias_ta.position ON person_in_movie.position_id = position.id JOIN person ON person.id = person_in_movie.person_id WHERE person.id = ?"
+    let sqlReq = "SELECT person_in_movie.role, movie.title, movie.production_year, position.position_name FROM movie JOIN person_in_movie ON person_in_movie.movie_id = movie.id JOIN if24_mattias_ta.position ON person_in_movie.position_id = position.id JOIN person ON person.id = person_in_movie.person_id WHERE person.id = ?"
     conn.execute(sqlReq, [req.params.id], (err, sqlRes)=>{
         if(err){
             throw err;
@@ -507,20 +507,21 @@ app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
 });
 
 app.get("/gallery", (req, res)=>{
-    let sqlReq = "SELECT id, file_name, alt_text FROM vp_photos WHERE privacy = ? AND deleted IS NULL";
-    const privacy = 3;
-    let photoList = [];
-    conn.execute(sqlReq, [privacy], (err, sqlRes)=>{
-        if(err){
-            res.render("gallery", {pictures: []});
-        }
-        else{
-            for(let i = 0; i < sqlRes.length; i ++){
-                photoList.push({id: sqlRes[i].id, fileName: sqlRes[i].file_name, href: "/gallery/thumb/", alt: sqlRes[i].alt_text})
-            }
-            res.render("gallery", {pictures: photoList});
-        }
-    });
+	let sqlReq = "SELECT id, file_name, alt_text FROM vp_photos WHERE privacy = ? AND deleted IS NULL";
+	const privacy = 3;
+	let photoList = [];
+	conn.execute(sqlReq, [privacy], (err, result)=>{
+		if(err){
+			res.render("gallery", {listData: []});
+		}
+		else {
+			console.log(result);
+			for(let i = 0; i < result.length; i ++) {
+				photoList.push({id: result[i].id,  href: "/gallery/thumb/", filename: result[i].file_name, alt: result[i].alt_text});
+			}
+			res.render("gallery", {listData: photoList});
+		}
+	});
 });
 
 function checkLogin(req,res,next){
