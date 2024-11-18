@@ -47,6 +47,8 @@ app.use("/news", newsRouter);
 //eestifilmi osa eraldi ruuteriga
 const estFilmRouter = require("./routes/estFilmRouter");
 app.use("/eestifilm", estFilmRouter);
+
+
 let notice = "";
 
 //Avaleht

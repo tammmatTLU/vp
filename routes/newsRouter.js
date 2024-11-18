@@ -4,8 +4,8 @@ const general = require("../my_modules/generalFnc");
 const {newsHome,
 	addNews,
 	addingNews,
-	newsList} = require("../controllers/newsController");
-
+	newsList,
+	readArticle} = require("../controllers/newsController");
 
 //kõikidele marsruutidele vahevara checkLogin
 router.use(general.checkLogin);

@@ -55,7 +55,7 @@ const addingNews = (req, res)=>{
 //@access private
 
 const newsList = (req, res)=>{
-    let sqlReq = "SELECT id, news_title, news_text, news_date FROM vp_news WHERE expire_date > DATE(NOW()) ORDER BY news_date DESC";
+    let sqlReq = "SELECT id, news_title, news_date FROM vp_news WHERE expire_date > DATE(NOW()) ORDER BY news_date DESC";
     conn.execute(sqlReq, (err, sqlRes)=>{
         if(err){
             res.render("readnews", {news: []});
@@ -65,10 +65,25 @@ const newsList = (req, res)=>{
         }
     });
 };
-const readArticle = 
+const readArticle = (req, res)=>{
+    let sqlReq = "SELECT news_title, news_text, news_date, first_name, last_name FROM vp_news JOIN vp_users ON vp_news.user_id = vp_users.id WHERE vp_news.id = ?";
+    conn.execute(sqlReq, [req.params.id], (err, sqlRes)=>{
+        if(err){
+            console.log("Ei saanud artiklit kätte!");
+            throw err;
+        } else {
+            res.render("article", {
+                title: sqlRes[0].news_title,
+                content: sqlRes[0].news_text,
+                date: sqlRes[0].news_date,
+                author: sqlRes[0].first_name + " " + sqlRes[0].last_name});
+        }
+    });
+};
 module.exports = {
     newsHome,
     addNews,
     addingNews,
-    newsList
+    newsList,
+    readArticle
 };

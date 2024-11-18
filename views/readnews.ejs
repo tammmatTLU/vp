@@ -14,7 +14,7 @@
 	<hr>
 	<h2>Viimased uudised</h2>
 	<% news.forEach(function(item) { %>
-		<li><a href="/news/read/<%= item.id %>"><%= item.news_title %></a></li>
+		<li><a href="/news/read/<%= item.id %>"><%= item.news_title %></a> Kuupäev: <%= item.news_date %></li>
 	<% }); %>
 </body>
 </html>
