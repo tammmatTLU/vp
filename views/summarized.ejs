@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <title>Mattias Tamm</title>
+</head>
+<body>
+  <img src="/banner/vp_banner_2024.png" alt="veebiprogrammeerimise 2024. aasta kursuse bänner">
+  <h1>Mattias Tamm</h1>
+  <hr>
+  <ul>
+    <li><a href="/">Avalehele</a></li>
+    <li><a href="/viljavedu">Viljavedu</a></li>
+  </ul>
+  <hr>
+  <h2>Kokkuvõte <%= locals.truck || "" %></h2>
+  <p>
+    <% if(truck != null) { %>
+      Kogu selle masina toodud vili: <%= total %> kg
+    <% } else { %>
+      Kogu toodud vili: <%= total %> kg
+    <% } %>
+  </p>
+  <hr>
+  <p>Tarned:</p>
+  <ul>
+    <% deliveryList.forEach(function(delivery) { %>
+      <li>
+        <% if(truck == null) { %>
+          Autonumber: <%= delivery.truck %>
+          <br>
+        <% } %>
+        Kuupäev: <%= delivery.readable_date %> 
+        <br>
+        Viljakoorem: <%= delivery.mass_in - delivery.mass_out %> kg
+      </li>
+    <% }); %>
+  </ul>
+</body>
+</html>

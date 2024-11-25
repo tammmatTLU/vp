@@ -48,6 +48,9 @@ app.use("/news", newsRouter);
 const estFilmRouter = require("./routes/estFilmRouter");
 app.use("/eestifilm", estFilmRouter);
 
+//VILJAVEDU osa eraldi ruuteriga
+const viljaveduRouter = require("./routes/viljaveduRouter");
+app.use("/viljavedu", viljaveduRouter);
 
 let notice = "";
 
@@ -113,9 +116,6 @@ app.post("/", (req, res)=>{
                             //Kui võrdlustulemus on positiivne
                             if(compareResult){
                                 console.log("Töötab.");
-                                //võtame sessiooni kasutusele.
-                                //mySession = req.session;
-                                //mySession.userId = result[0].id;
                                 req.session.userId = result[0].id;
                                 res.redirect("/home");
                             }
@@ -138,7 +138,6 @@ app.post("/", (req, res)=>{
 });
 
 app.get("/home", general.checkLogin,(req, res)=>{
-    //console.log(req.session.userId);
     res.render("home");
 });
 
