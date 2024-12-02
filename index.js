@@ -52,6 +52,14 @@ app.use("/eestifilm", estFilmRouter);
 const viljaveduRouter = require("./routes/viljaveduRouter");
 app.use("/viljavedu", viljaveduRouter);
 
+//gallerii osa eraldi ruuteriga
+const galleryRouter = require("./routes/galleryRouter");
+app.use("/gallery", galleryRouter);
+
+//ilmateate osa eraldi ruuteriga
+const weatherRouter = require("./routes/weatherRouter");
+app.use("/weather", weatherRouter);
+
 let notice = "";
 
 //Avaleht
@@ -359,24 +367,5 @@ app.post("/photoupload", upload.single("photoInput"), (req, res)=>{
         }
     });
 });
-
-app.get("/gallery", general.checkLogin, (req, res)=>{
-	let sqlReq = "SELECT id, file_name, alt_text FROM vp_photos WHERE privacy = ? AND deleted IS NULL";
-	const privacy = 3;
-	let photoList = [];
-	conn.execute(sqlReq, [privacy], (err, result)=>{
-		if(err){
-			res.render("gallery", {listData: []});
-		}
-		else {
-			console.log(result);
-			for(let i = 0; i < result.length; i ++) {
-				photoList.push({id: result[i].id,  href: "/gallery/thumb/", filename: result[i].file_name, alt: result[i].alt_text});
-			}
-			res.render("gallery", {listData: photoList});
-		}
-	});
-});
-
 
 app.listen(5209);

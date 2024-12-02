@@ -26,6 +26,7 @@
     </div>
   </dialog>
   <h2>Fotogalerii</h2>
+  <p> <%- links %></p>
   <div class="gallery">
     <% listData.forEach(function(image){ %>
       <img src="<%= image.href %><%= image.filename %>" alt="<%= image.alt %>" data-filename="<%= image.filename %>" data-id="<%= image.id %>" class="thumbs">
