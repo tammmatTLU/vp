@@ -23,9 +23,9 @@
   <ol>
     <% let i = 0; %>
     <% locations.forEach(function(name){ %>
-      <% let url = "/weather/" + i %>
+      <% let url = "/weather/" + i; %>
       <li><a href="<%= url %>"><%= name %></a></li>
-      <% i = i + 1; %>
+      <% i++; %>
     <% }); %>
   </ol>
   <hr>

@@ -9,6 +9,6 @@ const {
 
 router.route("/").get(weatherHome);
 
-router.route("/location/:name").get(locationWeather);
+router.route("/:id").get(locationWeather);
 
 module.exports = router;
