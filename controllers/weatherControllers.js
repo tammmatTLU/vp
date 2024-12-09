@@ -23,6 +23,7 @@ const weatherHome = (req, res)=>{
             estTxt: weatherData.forecasts.forecast[0].day.text,
             estMin: weatherData.forecasts.forecast[0].day.tempmin,
             estMax: weatherData.forecasts.forecast[0].day.tempmax,
+            locations: locationList
         });
     })
     .catch(error=>{

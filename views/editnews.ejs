@@ -20,5 +20,7 @@
 			<li>Pealkiri: <%= item.news_title %> | Kuupäev: <%= item.news_date %> | <a href="/news/edit/<%= item.id %>">Muuda</a> </li>
 		<% } %>
 	<% }); %>
+	<hr>
+	<p><%= locals.notice || 'Ootel!' %></p>
 </body>
 </html>

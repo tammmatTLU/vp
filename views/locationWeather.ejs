@@ -12,22 +12,13 @@
   <h2>Ilm</h2>
   <ul>
     <li><a href="/">Avalehele</a></li>
+    <li><a href="/weather">Ilmast</a></li>
   </ul>
   <hr>
   <h3>Eesti ilm</h3>
   <p><%= estTxt %></p>
   <p>Temperatuuri alampiir: <%= estMin %></p>
   <p>Temperatuuri ülempiir: <%= estMax %></p>
-  <hr>
-  <h3>Piirkonnad</h3>
-  <ol>
-    <% let i = 0; %>
-    <% locations.forEach(function(name){ %>
-      <% let url = "/weather/" + i %>
-      <li><a href="<%= url %>"><%= name %></a></li>
-      <% i = i + 1; %>
-    <% }); %>
-  </ol>
   <hr>
   <p><%= locals.notice || "" %></p>
 

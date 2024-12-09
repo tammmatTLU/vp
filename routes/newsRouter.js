@@ -5,7 +5,10 @@ const {newsHome,
 	addNews,
 	addingNews,
 	newsList,
-	readArticle} = require("../controllers/newsController");
+	readArticle,
+	editNews,
+	editArticle,
+	editingArticle} = require("../controllers/newsController");
 
 //kõikidele marsruutidele vahevara checkLogin
 router.use(general.checkLogin);
@@ -22,5 +25,11 @@ router.route("/add").post(addingNews);
 router.route("/read").get(newsList);
 
 router.route("/read/:id").get(readArticle);
+
+router.route("/edit").get(editNews);
+
+router.route("/edit/:id").get(editArticle);
+
+router.route("/edit/:id").post(editingArticle);
 
 module.exports = router;

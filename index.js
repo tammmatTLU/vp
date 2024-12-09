@@ -218,7 +218,7 @@ app.post("/signup", (req, res)=>{
                                     else{
                                         console.log("Kasutaja loodi nimega " + req.body.emailInput);
                                         notice = "Kasutaja "+ req.body.emailInput +" loodi!";
-                                        res.render("index", {notice:notice});
+                                        res.redirect("/");
                                     }
                                 });
                             }
